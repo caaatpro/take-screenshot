@@ -1,0 +1,46 @@
+{
+  "manifest_version": 2,
+  "name": "Take screenshot",
+  "version": "1.0",
+  "description": "Take screenshot of the entire web page",
+  "author": "caaatpro@gmail.com",
+  "icons": {
+    "16": "images/icon-16.png",
+    "48": "images/icon-48.png",
+    "128": "images/icon-128.png"
+  },
+  "background": {
+    "scripts": [
+      "js/jspdf.min.js",
+      "js/background.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "bower_components/jquery/dist/jquery.min.js",
+        "js/content-script.js"
+      ]
+    }
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "chrome_style": true
+  },
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage"
+  ],
+  "browser_action": {
+    "default_icon": {
+      "19": "images/icon-19.png",
+      "38": "images/icon-38.png"
+    },
+    "default_title": "Take screenshot",
+    "default_popup": "popup.html"
+  }
+}
