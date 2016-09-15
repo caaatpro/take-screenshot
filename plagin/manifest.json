@@ -12,6 +12,8 @@
   "background": {
     "scripts": [
       "js/jspdf.min.js",
+      "bower_components/jszip/dist/jszip.min.js",
+      "bower_components/file-saver/FileSaver.min.js",
       "js/background.js"
     ]
   },
@@ -26,10 +28,6 @@
       ]
     }
   ],
-  "options_ui": {
-    "page": "options.html",
-    "chrome_style": true
-  },
   "permissions": [
     "activeTab",
     "tabs",

@@ -3,39 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <title>Extension Options</title>
-  <link rel="stylesheet" href="css/poup.css" media="screen">
+  <link rel="stylesheet" href="css/popup.css" media="screen">
 </head>
 <body>
 
-Favorite color:
-<select id="color">
-  <option value="red">red</option>
-  <option value="green">green</option>
-  <option value="blue">blue</option>
-  <option value="yellow">yellow</option>
-</select>
-
-<label>
-  <input type="checkbox" id="like">
-  I like colors.
-</label>
-
-<label>
-  <input type="file" id="actionFile" accept=".js">
-  Actions file
-</label>
-
-<div id="status"></div>
-<button id="save">Save</button>
-<button id="start">Start</button>
-
-<div id="scrins" class="scrins">
-  <div class="item"></div>
-  <div class="item"></div>
-  <div class="item"></div>
-  <div class="item"></div>
-  <div class="item"></div>
+<div>
+  <label>
+    <input type="file" id="actionFile" accept=".js">
+    Actions file
+  </label>
 </div>
+<div id="status"></div>
+<div class="warning">Во время работы окно со слайдами должно быть активно!</div>
+
+<button id="start">Start</button>
 
 <script src="js/options.js"></script>
 </body>

@@ -7,6 +7,8 @@ var takeScreenshot = {
      */
     tabId: null,
 
+    winId: null,
+
     /**
      * @description PDF
      * @type {Object}
@@ -47,19 +49,22 @@ var takeScreenshot = {
      * @type {Object}
      */
     originalParams: {
-        overflow: "",
+        overflow: '',
         scrollTop: 0
     },
+
+    newWin: null,
+
+    zip: null,
+
+    slide: null,
+
+    slides: [],
 
     /**
      * @description Initialize plugin
      */
     initialize: function() {
-        this.screenshotCanvas = document.createElement("canvas");
-        this.screenshotContext = this.screenshotCanvas.getContext("2d");
-
-        doc = new jsPDF('l', 'pt', [1024, 768]);
-
         this.bindEvents();
     },
 
@@ -69,7 +74,7 @@ var takeScreenshot = {
     bindEvents: function() {
         // handle chrome requests
         chrome.runtime.onMessage.addListener(function(request, sender, callback) {
-            if (request.msg === "setPageDetails") {
+            if (request.msg === 'setPageDetails') {
 
                 this.size = request.size;
                 this.scrollBy = request.scrollBy;
@@ -79,25 +84,52 @@ var takeScreenshot = {
                 this.screenshotCanvas.height = this.size.height;
 
                 this.scrollTo(0);
-            } else if (request.msg === "capturePage") {
+            } else if (request.msg === 'capturePage') {
                 this.capturePage(request.position, request.lastCapture);
-            } else if (request.msg === "capture") {
+            } else if (request.msg === 'capture') {
+                chrome.browserAction.setBadgeBackgroundColor({color:[190, 190, 190, 230]});
+                chrome.browserAction.setBadgeText({
+                    text: this.slide.replace('slide-', '')
+                });
+
+                chrome.tabs.sendMessage(this.tabId, {
+                    'msg': 'getPageDetails'
+                });
+            } else if (request.msg === 'captureStop') {
+
+                var pdf = this.doc.output('blob');
+
+                this.zip.file('slides.pdf', pdf, {binary: true});
+
+                this.zip.generateAsync({type:'blob'})
+                .then(function(content) {
+                    saveAs(content, 'thumbnails.zip');
+                });
+            } else if (request.msg === 'slidename') {
+                this.slide = request.slide;
+            } else if (request.msg === 'captureStart') {
+                this.screenshotCanvas = document.createElement('canvas');
+                this.screenshotContext = this.screenshotCanvas.getContext('2d');
+
+                this.doc = new jsPDF('l', 'pt', [1024, 768], 'NONE');
+                this.doc.deletePage(1);
+
+                // newWin = window.open('about:blank', 'status', 'width=200,height=400');
+
+                this.zip = new JSZip();
+
+                this.slides = [];
+
                 var self = this;
                 chrome.tabs.query({
                     active: true,
                     currentWindow: true
                 }, function(tabs) {
                     self.tabId = tabs[0].id;
-
-                    chrome.tabs.sendMessage(tabs[0].id, {
-                        "msg": "getPageDetails"
-                    });
                 });
-            } else if (request.msg === "captureStop") {
-/*                var newWindow = window.open();
-                newWindow.document.write(this.htmlContent);
-                this.htmlContent = "";*/
-                doc.save('45.pdf');
+                chrome.windows.getCurrent(function(win) {
+                    self.winId = win.id;
+                });
             }
         }.bind(this));
     },
@@ -108,10 +140,10 @@ var takeScreenshot = {
      */
     scrollTo: function(position) {
         chrome.tabs.sendMessage(this.tabId, {
-            "msg": "scrollPage",
-            "size": this.size,
-            "scrollBy": this.scrollBy,
-            "scrollTo": position
+            'msg': 'scrollPage',
+            'size': this.size,
+            'scrollBy': this.scrollBy,
+            'scrollTo': position
         });
     },
 
@@ -120,8 +152,8 @@ var takeScreenshot = {
      */
     saveImg: function() {
 
-        var canvas = document.createElement("canvas");
-        var canvasContext = canvas.getContext("2d");
+        var canvas = document.createElement('canvas');
+        var canvasContext = canvas.getContext('2d');
         canvas.width = 1024;
         canvas.height = 768;
 
@@ -130,8 +162,22 @@ var takeScreenshot = {
 
         canvasContext.drawImage(this.screenshotCanvas, w, 0, canvas.width, canvas.height, 0, 0, canvas.width, canvas.height);
 
-        doc.addPage();
-        doc.addImage(canvas.toDataURL("image/jpeg"), 'JPEG', 0, 0, 1024, 768);
+        // newWin.document.write('<img src=''+canvas.toDataURL('image/jpeg')+''>');
+
+        this.doc.addPage();
+        this.doc.addImage(canvas.toDataURL('image/jpeg', 1.0), 'JPEG', 0, 0, canvas.width, canvas.height);
+
+        if (this.slides.indexOf(this.slide) === -1) {
+            canvas.width = 200;
+            canvas.height = 150;
+            canvasContext.drawImage(this.screenshotCanvas, w, 0, 1024, 768, 0, 0, 200, 150);
+
+            var data = canvas.toDataURL('image/jpeg', 1.0);
+            data = data.substr(data.indexOf(',')+1);
+
+            this.zip.file(this.slide+'.jpg', data, {base64: true});
+            this.slides.push(this.slide);
+        }
     },
 
     /**
@@ -142,13 +188,12 @@ var takeScreenshot = {
     capturePage: function(position, lastCapture) {
         var self = this;
 
-        // setTimeout(function () {
-        chrome.tabs.captureVisibleTab(null, {
-            "format": "png"
+        chrome.tabs.captureVisibleTab(self.winId, {
+            'format': 'png'
         }, function(dataURI) {
             var image = new Image();
 
-            if (typeof dataURI !== "undefined") {
+            if (typeof dataURI !== 'undefined') {
                 image.onload = function() {
                     self.screenshotContext.drawImage(image, 0, position);
 
@@ -162,7 +207,6 @@ var takeScreenshot = {
                 image.src = dataURI;
             }
         });
-        // }, 300);
     }
 };
 

@@ -7,8 +7,8 @@ function capture() {
     return new Promise(function(resolve, reject) {
       console.log('capture');
       chrome.extension.sendMessage({
-        "msg": "capture",
-        "originalParams": {}
+        'msg': 'capture',
+        'originalParams': {}
       });
       setTimeout(function () {
         resolve(result);
@@ -21,8 +21,20 @@ function captureStop() {
     return new Promise(function(resolve, reject) {
       console.log('captureStop');
       chrome.extension.sendMessage({
-        "msg": "captureStop",
-        "originalParams": {}
+        'msg': 'captureStop',
+        'originalParams': {}
+      });
+      resolve(result);
+    });
+  };
+}
+function captureStart() {
+  return function(result) {
+    return new Promise(function(resolve, reject) {
+      console.log('captureStart');
+      chrome.extension.sendMessage({
+        'msg': 'captureStart',
+        'originalParams': {}
       });
       resolve(result);
     });
@@ -31,7 +43,7 @@ function captureStop() {
 
 chrome.runtime.onMessage.addListener(function (request, sender, callback) {
   switch (request.msg) {
-    case "getPageDetails":
+    case 'getPageDetails':
       console.log('getPageDetails');
 
       var size = {
@@ -52,17 +64,17 @@ chrome.runtime.onMessage.addListener(function (request, sender, callback) {
       };
 
       chrome.extension.sendMessage({
-        "msg": "setPageDetails",
-        "size": size,
-        "scrollBy": window.innerHeight,
-        "originalParams": {
-          "overflow": document.querySelector("body").style.overflow,
-          "scrollTop": document.documentElement.scrollTop
+        'msg': 'setPageDetails',
+        'size': size,
+        'scrollBy': window.innerHeight,
+        'originalParams': {
+          'overflow': document.querySelector('body').style.overflow,
+          'scrollTop': document.documentElement.scrollTop
         }
       });
       break;
 
-    case "scrollPage":
+    case 'scrollPage':
       console.log('scrollPage');
       var lastCapture = false;
 
@@ -70,7 +82,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, callback) {
 
       // first scrolling
       if (request.scrollTo === 0) {
-        document.querySelector("body").style.overflow = "hidden";
+        document.querySelector('body').style.overflow = 'hidden';
       }
 
       // last scrolling
@@ -80,19 +92,19 @@ chrome.runtime.onMessage.addListener(function (request, sender, callback) {
       }
 
       chrome.extension.sendMessage({
-        "msg": "capturePage",
-        "position": request.scrollTo,
-        "lastCapture": lastCapture
+        'msg': 'capturePage',
+        'position': request.scrollTo,
+        'lastCapture': lastCapture
       });
       break;
 
-    case "resetPage":
+    case 'resetPage':
       console.log('resetPage');
       window.scrollTo(0, request.originalParams.scrollTop);
-      document.querySelector("body").style.overflow = request.originalParams.overflow;
+      document.querySelector('body').style.overflow = request.originalParams.overflow;
       break;
 
-    case "start":
+    case 'start':
       console.log('start');
       chrome.storage.sync.get({
         actionFile: ''
@@ -107,7 +119,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, callback) {
 
       break;
 
-    case "log":
+    case 'log':
       console.log(request.text);
 
       break;
