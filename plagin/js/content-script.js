@@ -106,16 +106,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, callback) {
 
     case 'start':
       console.log('start');
-      chrome.storage.sync.get({
-        actionFile: ''
-      }, function(items) {
-        // console.log(items.actionFile);
-        if (items.actionFile === '') {
-          alert('File is empty');
-        } else {
-          eval(items.actionFile);
-        }
-      });
+      console.log(request.actionFile);
+      eval(request.actionFile);
 
       break;
 

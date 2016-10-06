@@ -1,7 +1,15 @@
+var actionFile = '';
+
 function startScreenshot() {
+  if (actionFile === '') {
+    alert('File is empty');
+    return false;
+  }
+
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     chrome.tabs.sendMessage(tabs[0].id, {
       'msg': 'start',
+      'actionFile': actionFile,
       'originalParams': {}
     });
   });
@@ -13,18 +21,13 @@ function readSingleFile(evt) {
   if (f) {
     var r = new FileReader();
     r.onload = function(e) {
-      var contents = e.target.result;
+      actionFile = e.target.result;
 
-      chrome.storage.sync.set({
-        actionFile: contents
-      }, function() {
-        // Update status to let user know options were saved.
-        var status = document.getElementById('status');
-        status.textContent = 'File is read.';
-        setTimeout(function() {
-          status.textContent = '';
-        }, 750);
-      });
+      var status = document.getElementById('status');
+      status.textContent = 'File is read.';
+      setTimeout(function() {
+        status.textContent = '';
+      }, 750);
     };
     r.readAsText(f);
   } else {
